@@ -13,6 +13,7 @@ max_iters = 5000
 eval_interval = 500
 learning_rate = 3e-4
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f'device: {device}')
 eval_iters = 200
 n_embed = 384
 n_head = 6
@@ -217,9 +218,10 @@ max_length = 30
 #model = GPT.from_pretrained('gpt2')
 model = GPT(GPTConfig())
 model.to(device)
+model = torch.compile(model)
 print("model loaded")
 
-train_loader = DataLoaderLite(B=4, T=32)
+train_loader = DataLoaderLite(B=8, T=1024)
 
 optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
 for i in range(50):
@@ -233,7 +235,9 @@ for i in range(50):
     if device.type == 'cuda':
         torch.cuda.synchronize()
     t1 = time.time()
-    dt = t1 - t0
+    dt = (t1 - t0) * 1000
+    # tok / sec
+    
     print(f'step {i}, loss: {loss.item()}, dt:{dt}')
 
 
